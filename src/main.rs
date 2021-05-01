@@ -41,7 +41,6 @@ struct Scoreboard {
 
 struct Gravity;
 
-
 struct Collider;
 
 fn setup(
@@ -239,16 +238,16 @@ fn ball_collision_system(
 				sprite.size,
 			);
 			if let Some(collision) = collision {
-                scoreboard.score += 1;
-                commands.entity(collider_entity).despawn();
+				scoreboard.score += 1;
+				commands.entity(collider_entity).despawn();
 
 				// only reflect if the ball's velocity is going in the opposite direction of the
 				// collision
-                if let Collision::Top = collision {
-                    if velocity.y < 0.0 {
-                        velocity.y = -velocity.y;
-                    }
-                }
+				if let Collision::Top = collision {
+					if velocity.y < 0.0 {
+						velocity.y = -velocity.y;
+					}
+				}
 			}
 		}
 	}
@@ -260,8 +259,6 @@ fn ball_gravity_system(time: Res<Time>, mut ball_query: Query<&mut Ball, With<Gr
 		ball.velocity += Vec3::from([0.0, -980.0, 0.0]) * delta_seconds;
 	}
 }
-
-
 
 fn camera_tracking_system(
 	mut queries: QuerySet<(
