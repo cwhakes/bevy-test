@@ -13,7 +13,7 @@ fn main() {
 		.add_plugins(DefaultPlugins)
 		.insert_resource(Scoreboard { score: 0 })
 		.insert_resource(ClearColor(Color::rgb(0.9, 0.9, 0.9)))
-		.insert_resource(PlatformTimer(Timer::from_seconds(0.25, true)))
+		.insert_resource(PlatformTimer(Timer::from_seconds(1.0, true)))
 		.add_startup_system(setup.system())
 		.add_system(paddle_movement_system.system())
 		.add_system(ball_collision_system.system())
@@ -273,7 +273,7 @@ fn platform_spawner_system(
 	let current_pos = player_query.single().unwrap().translation.x;
 
 	for (platform, transform) in platform_query.iter() {
-		if transform.translation.x < current_pos - 100.0 {
+		if dbg!(transform.translation.x < current_pos - 500.0) {
 			commands.entity(platform).despawn();
 		}
 	}
@@ -283,11 +283,12 @@ fn platform_spawner_system(
 		commands
 			.spawn_bundle(SpriteBundle {
 				material: materials.add(Color::rgb(0.5, 0.5, 1.0).into()),
-				transform: Transform::from_xyz(current_pos + 100.0, y, 0.0),
-				sprite: Sprite::new(Vec2::new(120.0, 30.0)),
+				transform: Transform::from_xyz(current_pos + 500.0, y, 0.0),
+				sprite: Sprite::new(Vec2::new(500.0, 30.0)),
 				..Default::default()
 			})
-			.insert(Collider);
+			.insert(Collider)
+			.insert(Platform);
 	}
 }
 
