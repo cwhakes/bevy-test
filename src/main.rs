@@ -24,6 +24,7 @@ fn main() {
 		.add_system(ball_gravity_system.system())
 		.add_system(scoreboard_system.system())
 		.add_system(camera_tracking_system.system())
+		.add_system(ball_control_system.system())
 		.run();
 }
 
@@ -42,6 +43,8 @@ struct Scoreboard {
 struct Gravity;
 
 struct Collider;
+
+struct Scorable(Option<usize>);
 
 fn setup(
 	mut commands: Commands,
@@ -220,17 +223,16 @@ fn scoreboard_system(scoreboard: Res<Scoreboard>, mut query: Query<&mut Text>) {
 }
 
 fn ball_collision_system(
-	mut commands: Commands,
 	mut scoreboard: ResMut<Scoreboard>,
 	mut ball_query: Query<(&mut Ball, &Transform, &Sprite)>,
-	collider_query: Query<(Entity, &Transform, &Sprite), With<Collider>>,
+	mut collider_query: Query<(&Transform, &Sprite, Option<&mut Scorable>), With<Collider>>,
 ) {
 	if let Ok((mut ball, ball_transform, sprite)) = ball_query.single_mut() {
 		let ball_size = sprite.size;
 		let velocity = &mut ball.velocity;
 
 		// check collision with walls
-		for (collider_entity, transform, sprite) in collider_query.iter() {
+		for (transform, sprite, scorable) in collider_query.iter_mut() {
 			let collision = collide(
 				ball_transform.translation,
 				ball_size,
@@ -238,15 +240,42 @@ fn ball_collision_system(
 				sprite.size,
 			);
 			if let Some(collision) = collision {
-				scoreboard.score += 1;
-				commands.entity(collider_entity).despawn();
 
-				// only reflect if the ball's velocity is going in the opposite direction of the
-				// collision
-				if let Collision::Top = collision {
-					if velocity.y < 0.0 {
-						velocity.y = -velocity.y;
+				if let Some(mut scorable) = scorable {
+					if let Some(score) = scorable.0.take() {
+						scoreboard.score += score;
 					}
+				}
+
+				if let Collision::Top = collision {
+					velocity.y = velocity.y.max(0.0);
+				}
+			}
+		}
+	}
+}
+
+fn ball_control_system(
+	keyboard_input: Res<Input<KeyCode>>,
+	mut query: Query<(&mut Ball, &Transform, &Sprite)>,
+	collider_query: Query<(&Transform, &Sprite), With<Collider>>,
+) {
+	if let Ok((mut ball, ball_transform, sprite)) = query.single_mut() {
+		if keyboard_input.just_pressed(KeyCode::Space) {
+			let ball_size = sprite.size;
+			let velocity = &mut ball.velocity;
+
+			for (transform, sprite) in collider_query.iter() {
+				let collision = collide(
+					ball_transform.translation,
+					ball_size,
+					transform.translation,
+					sprite.size,
+				);
+
+				if collision.is_some() {
+					velocity.y += 500.0;
+					break;
 				}
 			}
 		}

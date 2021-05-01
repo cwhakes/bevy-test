@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use rand::prelude::*;
 
-use crate::{Ball, Collider};
+use crate::{Ball, Collider, Scorable};
 
 pub struct PlatformPlugin;
 
@@ -68,12 +68,13 @@ impl Platform {
 				..Default::default()
 			})
 			.insert(Collider)
-			.insert(Platform);
+			.insert(Platform)
+			.insert(Scorable(Some(10)));
 	}
 }
 
 impl Default for PlatformTimer {
 	fn default() -> Self {
-		Self(Timer::from_seconds(0.75, true))
+		Self(Timer::from_seconds(2.0, true))
 	}
 }
