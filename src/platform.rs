@@ -7,7 +7,7 @@ pub struct PlatformPlugin;
 
 impl Plugin for PlatformPlugin {
 	fn build(&self, app: &mut AppBuilder) {
-		app.insert_resource(PlatformTimer(Timer::from_seconds(0.5, true)))
+		app.insert_resource(PlatformTimer::default())
 			.add_startup_system(platform_setup_system.system())
 			.add_system(platform_spawner_system.system());
 	}
@@ -15,6 +15,8 @@ impl Plugin for PlatformPlugin {
 
 const PLAT_MIN: f32 = -225.0;
 const PLAT_MAX: f32 = -150.0;
+const PLAT_LEN: f32 = 500.0;
+const PLAT_HGT: f32 = 30.0;
 
 struct Platform;
 struct PlatformTimer(Timer);
@@ -23,7 +25,7 @@ fn platform_setup_system(
 	mut commands: Commands,
 	mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-	Platform::spawn(&mut commands, &mut materials, Transform::from_xyz(0.0, PLAT_MIN, 0.0),)
+	Platform::spawn(&mut commands, &mut materials, Transform::from_xyz(PLAT_LEN / 2.0, PLAT_MIN, 0.0),)
 }
 
 fn platform_spawner_system(
@@ -62,10 +64,16 @@ impl Platform {
 			.spawn_bundle(SpriteBundle {
 				material: materials.add(Color::rgb(0.5, 0.5, 1.0).into()),
 				transform: location,
-				sprite: Sprite::new(Vec2::new(500.0, 30.0)),
+				sprite: Sprite::new(Vec2::new(PLAT_LEN, PLAT_HGT)),
 				..Default::default()
 			})
 			.insert(Collider)
 			.insert(Platform);
+	}
+}
+
+impl Default for PlatformTimer {
+	fn default() -> Self {
+		Self(Timer::from_seconds(0.75, true))
 	}
 }
