@@ -18,7 +18,6 @@ fn main() {
 		.insert_resource(Scoreboard { score: 0 })
 		.insert_resource(ClearColor(Color::rgb(0.9, 0.9, 0.9)))
 		.add_startup_system(setup.system())
-		.add_system(paddle_movement_system.system())
 		.add_system(ball_collision_system.system())
 		.add_system(ball_movement_system.system())
 		.add_system(ball_gravity_system.system())
@@ -26,10 +25,6 @@ fn main() {
 		.add_system(camera_tracking_system.system())
 		.add_system(ball_control_system.system())
 		.run();
-}
-
-struct Paddle {
-	speed: f32,
 }
 
 struct Ball {
@@ -56,17 +51,6 @@ fn setup(
 	// cameras
 	commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 	commands.spawn_bundle(UiCameraBundle::default());
-	// paddle
-	// commands
-	//     .spawn_bundle(SpriteBundle {
-	//         material: materials.add(Color::rgb(0.5, 0.5, 1.0).into()),
-	//         transform: Transform::from_xyz(0.0, -215.0, 0.0),
-	//         sprite: Sprite::new(Vec2::new(120.0, 30.0)),
-	//         ..Default::default()
-	//     })
-	//     .insert(Paddle { speed: 500.0 })
-	//     .insert(Collider::Paddle);
-	// ball
 	commands
 		.spawn_bundle(SpriteBundle {
 			material: materials.add(Color::rgb(1.0, 0.5, 0.5).into()),
@@ -112,100 +96,6 @@ fn setup(
 		},
 		..Default::default()
 	});
-
-	// Add walls
-	// let wall_material = materials.add(Color::rgb(0.8, 0.8, 0.8).into());
-	// let wall_thickness = 10.0;
-	// let bounds = Vec2::new(900.0, 600.0);
-
-	// // left
-	// commands
-	//     .spawn_bundle(SpriteBundle {
-	//         material: wall_material.clone(),
-	//         transform: Transform::from_xyz(-bounds.x / 2.0, 0.0, 0.0),
-	//         sprite: Sprite::new(Vec2::new(wall_thickness, bounds.y + wall_thickness)),
-	//         ..Default::default()
-	//     })
-	//     .insert(Collider::Solid);
-	// // right
-	// commands
-	//     .spawn_bundle(SpriteBundle {
-	//         material: wall_material.clone(),
-	//         transform: Transform::from_xyz(bounds.x / 2.0, 0.0, 0.0),
-	//         sprite: Sprite::new(Vec2::new(wall_thickness, bounds.y + wall_thickness)),
-	//         ..Default::default()
-	//     })
-	//     .insert(Collider::Solid);
-	// bottom
-	// commands
-	// 	.spawn_bundle(SpriteBundle {
-	// 		material: wall_material.clone(),
-	// 		transform: Transform::from_xyz(0.0, -bounds.y / 2.0, 0.0),
-	// 		sprite: Sprite::new(Vec2::new(bounds.x + wall_thickness, wall_thickness)),
-	// 		..Default::default()
-	// 	})
-	// 	.insert(Collider::Solid);
-	// // top
-	// commands
-	//     .spawn_bundle(SpriteBundle {
-	//         material: wall_material,
-	//         transform: Transform::from_xyz(0.0, bounds.y / 2.0, 0.0),
-	//         sprite: Sprite::new(Vec2::new(bounds.x + wall_thickness, wall_thickness)),
-	//         ..Default::default()
-	//     })
-	//     .insert(Collider::Solid);
-
-	// Add bricks
-	// let brick_rows = 4;
-	// let brick_columns = 5;
-	// let brick_spacing = 20.0;
-	// let brick_size = Vec2::new(150.0, 30.0);
-	// let bricks_width = brick_columns as f32 * (brick_size.x + brick_spacing) - brick_spacing;
-	// // center the bricks and move them up a bit
-	// let bricks_offset = Vec3::new(-(bricks_width - brick_size.x) / 2.0, 100.0, 0.0);
-	// let brick_material = materials.add(Color::rgb(0.5, 0.5, 1.0).into());
-	// for row in 0..brick_rows {
-	//     let y_position = row as f32 * (brick_size.y + brick_spacing);
-	//     for column in 0..brick_columns {
-	//         let brick_position = Vec3::new(
-	//             column as f32 * (brick_size.x + brick_spacing),
-	//             y_position,
-	//             0.0,
-	//         ) + bricks_offset;
-	//         // brick
-	//         commands
-	//             .spawn_bundle(SpriteBundle {
-	//                 material: brick_material.clone(),
-	//                 sprite: Sprite::new(brick_size),
-	//                 transform: Transform::from_translation(brick_position),
-	//                 ..Default::default()
-	//             })
-	//             .insert(Collider::Scorable);
-	//     }
-	// }
-}
-
-fn paddle_movement_system(
-	time: Res<Time>,
-	keyboard_input: Res<Input<KeyCode>>,
-	mut query: Query<(&Paddle, &mut Transform)>,
-) {
-	if let Ok((paddle, mut transform)) = query.single_mut() {
-		let mut direction = 0.0;
-		if keyboard_input.pressed(KeyCode::Left) {
-			direction -= 1.0;
-		}
-
-		if keyboard_input.pressed(KeyCode::Right) {
-			direction += 1.0;
-		}
-
-		let translation = &mut transform.translation;
-		// move the paddle horizontally
-		translation.x += time.delta_seconds() * direction * paddle.speed;
-		// bound the paddle within the walls
-		translation.x = translation.x.min(380.0).max(-380.0);
-	}
 }
 
 fn ball_movement_system(time: Res<Time>, mut ball_query: Query<(&Ball, &mut Transform)>) {
