@@ -21,7 +21,7 @@ const PLAT_HGT: f32 = 30.0;
 struct Platform;
 struct PlatformTimer(Timer);
 
-fn platform_setup_system(
+pub fn platform_setup_system(
 	mut commands: Commands,
 	mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
@@ -39,7 +39,7 @@ fn platform_spawner_system(
 	let current_pos = player_query.single().unwrap().translation.x;
 
 	for (platform, transform) in platform_query.iter() {
-		if transform.translation.x < current_pos - 500.0 {
+		if !((current_pos - 500.0)..(current_pos + 500.0)).contains(&transform.translation.x) {
 			commands.entity(platform).despawn();
 		}
 	}

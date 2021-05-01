@@ -24,6 +24,7 @@ fn main() {
 		.add_system(scoreboard_system.system())
 		.add_system(camera_tracking_system.system())
 		.add_system(ball_control_system.system())
+		.add_system(death_system.system())
 		.run();
 }
 
@@ -189,6 +190,23 @@ fn camera_tracking_system(
 	for (mut transform, camera) in queries.q1_mut().iter_mut() {
 		if camera.name.as_deref() == Some(CAMERA_2D) {
 			transform.translation.x = current_pos;
+		}
+	}
+}
+
+fn death_system(
+	commands: Commands,
+	materials: ResMut<Assets<ColorMaterial>>,
+	mut scoreboard: ResMut<Scoreboard>,
+	mut ball_query: Query<(&mut Ball, &mut Transform)>,
+) {
+	if let Ok((mut ball, mut transform)) = ball_query.single_mut() {
+		if transform.translation.y < -500.0 {
+			ball.velocity = 400.0 * Vec3::new(0.5, -0.5, 0.0).normalize();
+			*transform = Transform::from_xyz(0.0, -50.0, 1.0);
+			scoreboard.score = 0;
+
+			platform::platform_setup_system(commands, materials);
 		}
 	}
 }
