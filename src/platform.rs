@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use rand::prelude::*;
 
-use crate::{Ball, Collider, Scorable};
+use crate::{Collider, Player, Scorable};
 
 pub struct PlatformPlugin;
 
@@ -21,11 +21,12 @@ const PLAT_HGT: f32 = 30.0;
 struct Platform;
 struct PlatformTimer(Timer);
 
-pub fn platform_setup_system(
-	mut commands: Commands,
-	mut materials: ResMut<Assets<ColorMaterial>>,
-) {
-	Platform::spawn(&mut commands, &mut materials, Transform::from_xyz(PLAT_LEN / 2.0, PLAT_MIN, 0.0),)
+pub fn platform_setup_system(mut commands: Commands, mut materials: ResMut<Assets<ColorMaterial>>) {
+	Platform::spawn(
+		&mut commands,
+		&mut materials,
+		Transform::from_xyz(PLAT_LEN / 2.0, PLAT_MIN, 0.0),
+	)
 }
 
 fn platform_spawner_system(
@@ -34,7 +35,7 @@ fn platform_spawner_system(
 	time: Res<Time>,
 	mut timer: ResMut<PlatformTimer>,
 	platform_query: Query<(Entity, &Transform), With<Platform>>,
-	player_query: Query<&Transform, With<Ball>>,
+	player_query: Query<&Transform, With<Player>>,
 ) {
 	let current_pos = player_query.single().unwrap().translation.x;
 

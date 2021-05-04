@@ -18,17 +18,17 @@ fn main() {
 		.insert_resource(Scoreboard { score: 0 })
 		.insert_resource(ClearColor(Color::rgb(0.9, 0.9, 0.9)))
 		.add_startup_system(setup.system())
-		.add_system(ball_collision_system.system())
-		.add_system(ball_movement_system.system())
-		.add_system(ball_gravity_system.system())
+		.add_system(player_collision_system.system())
+		.add_system(player_movement_system.system())
+		.add_system(player_gravity_system.system())
 		.add_system(scoreboard_system.system())
 		.add_system(camera_tracking_system.system())
-		.add_system(ball_control_system.system())
+		.add_system(player_control_system.system())
 		.add_system(death_system.system())
 		.run();
 }
 
-struct Ball {
+struct Player {
 	velocity: Vec3,
 }
 
@@ -59,7 +59,7 @@ fn setup(
 			sprite: Sprite::new(Vec2::new(30.0, 30.0)),
 			..Default::default()
 		})
-		.insert(Ball {
+		.insert(Player {
 			velocity: 400.0 * Vec3::new(0.5, -0.5, 0.0).normalize(),
 		})
 		.insert(Gravity);
@@ -99,12 +99,12 @@ fn setup(
 	});
 }
 
-fn ball_movement_system(time: Res<Time>, mut ball_query: Query<(&Ball, &mut Transform)>) {
-	// clamp the timestep to stop the ball from escaping when the game starts
+fn player_movement_system(time: Res<Time>, mut player_query: Query<(&Player, &mut Transform)>) {
+	// clamp the timestep to stop the player from escaping when the game starts
 	let delta_seconds = f32::min(0.2, time.delta_seconds());
 
-	if let Ok((ball, mut transform)) = ball_query.single_mut() {
-		transform.translation += ball.velocity * delta_seconds;
+	if let Ok((player, mut transform)) = player_query.single_mut() {
+		transform.translation += player.velocity * delta_seconds;
 	}
 }
 
@@ -113,25 +113,24 @@ fn scoreboard_system(scoreboard: Res<Scoreboard>, mut query: Query<&mut Text>) {
 	text.sections[0].value = format!("Score: {}", scoreboard.score);
 }
 
-fn ball_collision_system(
+fn player_collision_system(
 	mut scoreboard: ResMut<Scoreboard>,
-	mut ball_query: Query<(&mut Ball, &Transform, &Sprite)>,
+	mut player_query: Query<(&mut Player, &Transform, &Sprite)>,
 	mut collider_query: Query<(&Transform, &Sprite, Option<&mut Scorable>), With<Collider>>,
 ) {
-	if let Ok((mut ball, ball_transform, sprite)) = ball_query.single_mut() {
-		let ball_size = sprite.size;
-		let velocity = &mut ball.velocity;
+	if let Ok((mut player, player_transform, sprite)) = player_query.single_mut() {
+		let player_size = sprite.size;
+		let velocity = &mut player.velocity;
 
 		// check collision with walls
 		for (transform, sprite, scorable) in collider_query.iter_mut() {
 			let collision = collide(
-				ball_transform.translation,
-				ball_size,
+				player_transform.translation,
+				player_size,
 				transform.translation,
 				sprite.size,
 			);
 			if let Some(collision) = collision {
-
 				if let Some(mut scorable) = scorable {
 					if let Some(score) = scorable.0.take() {
 						scoreboard.score += score;
@@ -146,20 +145,20 @@ fn ball_collision_system(
 	}
 }
 
-fn ball_control_system(
+fn player_control_system(
 	keyboard_input: Res<Input<KeyCode>>,
-	mut query: Query<(&mut Ball, &Transform, &Sprite)>,
+	mut query: Query<(&mut Player, &Transform, &Sprite)>,
 	collider_query: Query<(&Transform, &Sprite), With<Collider>>,
 ) {
-	if let Ok((mut ball, ball_transform, sprite)) = query.single_mut() {
+	if let Ok((mut player, player_transform, sprite)) = query.single_mut() {
 		if keyboard_input.just_pressed(KeyCode::Space) {
-			let ball_size = sprite.size;
-			let velocity = &mut ball.velocity;
+			let player_size = sprite.size;
+			let velocity = &mut player.velocity;
 
 			for (transform, sprite) in collider_query.iter() {
 				let collision = collide(
-					ball_transform.translation,
-					ball_size,
+					player_transform.translation,
+					player_size,
 					transform.translation,
 					sprite.size,
 				);
@@ -173,16 +172,16 @@ fn ball_control_system(
 	}
 }
 
-fn ball_gravity_system(time: Res<Time>, mut ball_query: Query<&mut Ball, With<Gravity>>) {
+fn player_gravity_system(time: Res<Time>, mut player_query: Query<&mut Player, With<Gravity>>) {
 	let delta_seconds = f32::min(0.2, time.delta_seconds());
-	for mut ball in ball_query.iter_mut() {
-		ball.velocity += Vec3::from([0.0, -980.0, 0.0]) * delta_seconds;
+	for mut player in player_query.iter_mut() {
+		player.velocity += Vec3::from([0.0, -980.0, 0.0]) * delta_seconds;
 	}
 }
 
 fn camera_tracking_system(
 	mut queries: QuerySet<(
-		Query<&Transform, With<Ball>>,
+		Query<&Transform, With<Player>>,
 		Query<(&mut Transform, &Camera)>,
 	)>,
 ) {
@@ -198,11 +197,11 @@ fn death_system(
 	commands: Commands,
 	materials: ResMut<Assets<ColorMaterial>>,
 	mut scoreboard: ResMut<Scoreboard>,
-	mut ball_query: Query<(&mut Ball, &mut Transform)>,
+	mut player_query: Query<(&mut Player, &mut Transform)>,
 ) {
-	if let Ok((mut ball, mut transform)) = ball_query.single_mut() {
+	if let Ok((mut player, mut transform)) = player_query.single_mut() {
 		if transform.translation.y < -500.0 {
-			ball.velocity = 400.0 * Vec3::new(0.5, -0.5, 0.0).normalize();
+			player.velocity = 400.0 * Vec3::new(0.5, -0.5, 0.0).normalize();
 			*transform = Transform::from_xyz(0.0, -50.0, 1.0);
 			scoreboard.score = 0;
 
