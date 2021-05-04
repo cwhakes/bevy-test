@@ -33,9 +33,7 @@ fn player_setup_system(mut commands: Commands, mut materials: ResMut<Assets<Colo
 			..Default::default()
 		})
 		.insert(Player)
-		.insert(Physics {
-			velocity: 400.0 * Vec3::new(0.5, -0.5, 0.0).normalize(),
-		})
+		.insert(Physics::default())
 		.insert(Gravity::default());
 }
 
@@ -120,7 +118,7 @@ fn death_system(
 ) {
 	if let Ok((mut player_physics, mut transform)) = player_query.single_mut() {
 		if transform.translation.y < -500.0 {
-			player_physics.velocity = 400.0 * Vec3::new(0.5, -0.5, 0.0).normalize();
+			*player_physics = Physics::default();
 			*transform = Transform::from_xyz(0.0, -50.0, 1.0);
 			scoreboard.score = 0;
 
