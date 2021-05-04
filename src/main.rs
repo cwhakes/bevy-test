@@ -2,10 +2,7 @@ mod physics;
 mod platform;
 mod player;
 
-use bevy::{
-	prelude::*,
-	render::pass::ClearColor,
-};
+use bevy::{prelude::*, render::pass::ClearColor};
 
 use physics::PhysicsPlugin;
 use platform::PlatformPlugin;
@@ -25,8 +22,6 @@ fn main() {
 		.run();
 }
 
-
-
 struct Scoreboard {
 	score: usize,
 }
@@ -35,10 +30,7 @@ struct Collider;
 
 struct Scorable(Option<usize>);
 
-fn setup(
-	mut commands: Commands,
-	asset_server: Res<AssetServer>,
-) {
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 	// Add the game's entities to our world
 
 	// cameras
@@ -85,5 +77,3 @@ fn scoreboard_system(scoreboard: Res<Scoreboard>, mut query: Query<&mut Text>) {
 	let mut text = query.single_mut().unwrap();
 	text.sections[0].value = format!("Score: {}", scoreboard.score);
 }
-
-

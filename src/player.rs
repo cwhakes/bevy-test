@@ -5,14 +5,16 @@ use bevy::{
 	sprite::collide_aabb::{collide, Collision},
 };
 
-use crate::{Collider, physics::{Gravity, Physics}, Scorable, Scoreboard};
+use crate::{
+	physics::{Gravity, Physics},
+	Collider, Scorable, Scoreboard,
+};
 
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
 	fn build(&self, app: &mut AppBuilder) {
-		app
-			.add_startup_system(player_setup_system.system())
+		app.add_startup_system(player_setup_system.system())
 			.add_system(player_collision_system.system())
 			.add_system(camera_tracking_system.system())
 			.add_system(player_control_system.system())
@@ -22,20 +24,19 @@ impl Plugin for PlayerPlugin {
 
 pub struct Player;
 
-fn player_setup_system(	mut commands: Commands,
-	mut materials: ResMut<Assets<ColorMaterial>>,) {
+fn player_setup_system(mut commands: Commands, mut materials: ResMut<Assets<ColorMaterial>>) {
 	commands
-	.spawn_bundle(SpriteBundle {
-		material: materials.add(Color::rgb(1.0, 0.5, 0.5).into()),
-		transform: Transform::from_xyz(0.0, -50.0, 1.0),
-		sprite: Sprite::new(Vec2::new(30.0, 30.0)),
-		..Default::default()
-	})
-	.insert(Player)
-	.insert(Physics {
-		velocity: 400.0 * Vec3::new(0.5, -0.5, 0.0).normalize(),
-	})
-	.insert(Gravity::default());
+		.spawn_bundle(SpriteBundle {
+			material: materials.add(Color::rgb(1.0, 0.5, 0.5).into()),
+			transform: Transform::from_xyz(0.0, -50.0, 1.0),
+			sprite: Sprite::new(Vec2::new(30.0, 30.0)),
+			..Default::default()
+		})
+		.insert(Player)
+		.insert(Physics {
+			velocity: 400.0 * Vec3::new(0.5, -0.5, 0.0).normalize(),
+		})
+		.insert(Gravity::default());
 }
 
 fn player_collision_system(
@@ -127,4 +128,3 @@ fn death_system(
 		}
 	}
 }
-
