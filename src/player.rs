@@ -7,7 +7,8 @@ use bevy::{
 
 use crate::{
 	physics::{Gravity, Physics},
-	Collider, Scorable, Scoreboard,
+	score::{Scorable, Scoreboard},
+	Collider,
 };
 
 pub struct PlayerPlugin;

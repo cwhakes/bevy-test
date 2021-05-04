@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use rand::prelude::*;
 
-use crate::{player::Player, Collider, Scorable};
+use crate::{player::Player, score::Scorable, Collider};
 
 pub struct PlatformPlugin;
 

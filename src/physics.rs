@@ -34,7 +34,7 @@ fn gravity_system(time: Res<Time>, mut query: Query<(&mut Physics, &Gravity)>) {
 impl Default for Physics {
 	fn default() -> Self {
 		Self {
-			velocity: 400.0 * Vec3::new(0.5, -0.5, 0.0).normalize()
+			velocity: 400.0 * Vec3::new(0.5, -0.5, 0.0).normalize(),
 		}
 	}
 }
