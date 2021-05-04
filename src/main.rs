@@ -1,3 +1,4 @@
+mod physics;
 mod platform;
 mod player;
 
@@ -6,6 +7,7 @@ use bevy::{
 	render::pass::ClearColor,
 };
 
+use physics::PhysicsPlugin;
 use platform::PlatformPlugin;
 use player::PlayerPlugin;
 
@@ -13,6 +15,7 @@ use player::PlayerPlugin;
 fn main() {
 	App::build()
 		.add_plugins(DefaultPlugins)
+		.add_plugin(PhysicsPlugin)
 		.add_plugin(PlatformPlugin)
 		.add_plugin(PlayerPlugin)
 		.insert_resource(Scoreboard { score: 0 })
