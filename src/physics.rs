@@ -10,7 +10,7 @@ impl Plugin for PhysicsPlugin {
 }
 
 pub struct Physics {
-	velocity: Vec3,
+	pub velocity: Vec3,
 }
 
 pub struct Gravity(f32);

@@ -31,8 +31,6 @@ struct Scoreboard {
 	score: usize,
 }
 
-struct Gravity;
-
 struct Collider;
 
 struct Scorable(Option<usize>);

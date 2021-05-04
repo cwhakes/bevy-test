@@ -5,7 +5,7 @@ use bevy::{
 	sprite::collide_aabb::{collide, Collision},
 };
 
-use crate::{Collider, Gravity, Scorable, Scoreboard};
+use crate::{Collider, physics::{Gravity, Physics}, Scorable, Scoreboard};
 
 pub struct PlayerPlugin;
 
@@ -14,17 +14,13 @@ impl Plugin for PlayerPlugin {
 		app
 			.add_startup_system(player_setup_system.system())
 			.add_system(player_collision_system.system())
-			.add_system(player_movement_system.system())
-			.add_system(player_gravity_system.system())
 			.add_system(camera_tracking_system.system())
 			.add_system(player_control_system.system())
 			.add_system(death_system.system());
 	}
 }
 
-pub struct Player {
-	velocity: Vec3,
-}
+pub struct Player;
 
 fn player_setup_system(	mut commands: Commands,
 	mut materials: ResMut<Assets<ColorMaterial>>,) {
@@ -35,29 +31,21 @@ fn player_setup_system(	mut commands: Commands,
 		sprite: Sprite::new(Vec2::new(30.0, 30.0)),
 		..Default::default()
 	})
-	.insert(Player {
+	.insert(Player)
+	.insert(Physics {
 		velocity: 400.0 * Vec3::new(0.5, -0.5, 0.0).normalize(),
 	})
-	.insert(Gravity);
-}
-
-fn player_movement_system(time: Res<Time>, mut player_query: Query<(&Player, &mut Transform)>) {
-	// clamp the timestep to stop the player from escaping when the game starts
-	let delta_seconds = f32::min(0.2, time.delta_seconds());
-
-	if let Ok((player, mut transform)) = player_query.single_mut() {
-		transform.translation += player.velocity * delta_seconds;
-	}
+	.insert(Gravity::default());
 }
 
 fn player_collision_system(
 	mut scoreboard: ResMut<Scoreboard>,
-	mut player_query: Query<(&mut Player, &Transform, &Sprite)>,
+	mut player_query: Query<(&mut Physics, &Transform, &Sprite), With<Player>>,
 	mut collider_query: Query<(&Transform, &Sprite, Option<&mut Scorable>), With<Collider>>,
 ) {
-	if let Ok((mut player, player_transform, sprite)) = player_query.single_mut() {
+	if let Ok((mut player_physics, player_transform, sprite)) = player_query.single_mut() {
 		let player_size = sprite.size;
-		let velocity = &mut player.velocity;
+		let velocity = &mut player_physics.velocity;
 
 		// check collision with walls
 		for (transform, sprite, scorable) in collider_query.iter_mut() {
@@ -84,13 +72,13 @@ fn player_collision_system(
 
 fn player_control_system(
 	keyboard_input: Res<Input<KeyCode>>,
-	mut query: Query<(&mut Player, &Transform, &Sprite)>,
+	mut player_query: Query<(&mut Physics, &Transform, &Sprite), With<Player>>,
 	collider_query: Query<(&Transform, &Sprite), With<Collider>>,
 ) {
-	if let Ok((mut player, player_transform, sprite)) = query.single_mut() {
+	if let Ok((mut player_physics, player_transform, sprite)) = player_query.single_mut() {
 		if keyboard_input.just_pressed(KeyCode::Space) {
 			let player_size = sprite.size;
-			let velocity = &mut player.velocity;
+			let velocity = &mut player_physics.velocity;
 
 			for (transform, sprite) in collider_query.iter() {
 				let collision = collide(
@@ -106,13 +94,6 @@ fn player_control_system(
 				}
 			}
 		}
-	}
-}
-
-fn player_gravity_system(time: Res<Time>, mut player_query: Query<&mut Player, With<Gravity>>) {
-	let delta_seconds = f32::min(0.2, time.delta_seconds());
-	for mut player in player_query.iter_mut() {
-		player.velocity += Vec3::from([0.0, -980.0, 0.0]) * delta_seconds;
 	}
 }
 
@@ -134,11 +115,11 @@ fn death_system(
 	commands: Commands,
 	materials: ResMut<Assets<ColorMaterial>>,
 	mut scoreboard: ResMut<Scoreboard>,
-	mut player_query: Query<(&mut Player, &mut Transform)>,
+	mut player_query: Query<(&mut Physics, &mut Transform), With<Player>>,
 ) {
-	if let Ok((mut player, mut transform)) = player_query.single_mut() {
+	if let Ok((mut player_physics, mut transform)) = player_query.single_mut() {
 		if transform.translation.y < -500.0 {
-			player.velocity = 400.0 * Vec3::new(0.5, -0.5, 0.0).normalize();
+			player_physics.velocity = 400.0 * Vec3::new(0.5, -0.5, 0.0).normalize();
 			*transform = Transform::from_xyz(0.0, -50.0, 1.0);
 			scoreboard.score = 0;
 
