@@ -4,12 +4,13 @@ pub struct ScorePlugin;
 
 impl Plugin for ScorePlugin {
 	fn build(&self, app: &mut AppBuilder) {
-		app.insert_resource(Scoreboard { score: 0 })
+		app.insert_resource(Scoreboard::default())
 			.add_startup_system(score_setup_system.system())
 			.add_system(scoreboard_system.system());
 	}
 }
 
+#[derive(Default)]
 pub struct Scoreboard {
 	pub score: usize,
 }
@@ -55,4 +56,18 @@ fn score_setup_system(mut commands: Commands, asset_server: Res<AssetServer>) {
 fn scoreboard_system(scoreboard: Res<Scoreboard>, mut query: Query<&mut Text>) {
 	let mut text = query.single_mut().unwrap();
 	text.sections[0].value = format!("Score: {}", scoreboard.score);
+}
+
+impl Scoreboard {
+	pub fn score(&mut self, scorable: &mut Scorable) {
+		if let Some(score) = scorable.0.take() {
+			self.score += score;
+		}
+	}
+}
+
+impl Scorable {
+	pub fn new(value: usize) -> Self {
+		Self(Some(value))
+	}
 }

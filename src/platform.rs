@@ -70,7 +70,7 @@ impl Platform {
 			})
 			.insert(Collider)
 			.insert(Platform)
-			.insert(Scorable(Some(10)));
+			.insert(Scorable::new(10));
 	}
 }
 

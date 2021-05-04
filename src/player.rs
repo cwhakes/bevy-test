@@ -57,9 +57,7 @@ fn player_collision_system(
 			);
 			if let Some(collision) = collision {
 				if let Some(mut scorable) = scorable {
-					if let Some(score) = scorable.0.take() {
-						scoreboard.score += score;
-					}
+					scoreboard.score(&mut scorable)
 				}
 
 				if let Collision::Top = collision {
